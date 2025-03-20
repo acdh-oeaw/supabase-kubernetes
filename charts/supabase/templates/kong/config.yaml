@@ -230,4 +230,16 @@ data:
             config:
               hide_credentials: true
     {{- end }}
+      - name: iiif
+        _comment: 'IIIF: /* -> http://cantaloupe:8182/iiif/v3/*'
+        url: http://cantaloupe:8182/iiif
+        routes:
+          - name: iiif-all
+            strip_path: true
+            paths:
+              - /iiif/
+    {{- if .Values.secret.iiif }}
+      plugins:
+        - name: cors
+    {{- end }}
 {{- end }}
