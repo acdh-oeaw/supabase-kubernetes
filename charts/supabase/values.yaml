@@ -1150,3 +1150,28 @@ minio:
   nodeSelector: {}
   tolerations: []
   affinity: {}
+
+cantaloupe:
+  image:
+    repository: uclalibrary/cantaloupe
+    tag: 5.0.5-7
+  livenessProbe:
+    httpGet:
+      path: /
+      port: 8182
+    initialDelaySeconds: 30
+  volumeMounts:
+    - mountPath: /etc/cantaloupe/delegates.rb
+      name: delegates-rb
+      subPath: delegates.rb
+  volumes:
+    - configMap:
+        defaultMode: 420
+        name: delegates-rb
+        optional: false
+      name: delegates-rb
+    - name: recogito-env-vars
+      secret:
+        defaultMode: 420
+        optional: false
+        secretName: recogito-env-vars

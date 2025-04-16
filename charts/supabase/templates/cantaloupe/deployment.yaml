@@ -1,0 +1,78 @@
+{{- if .Values.cantaloupe.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "supabase.cantaloupe.fullname" . }}
+  labels:
+    {{- include "supabase.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.cantaloupe.autoscaling.enabled }}
+  replicas: {{ .Values.cantaloupe.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "supabase.cantaloupe.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.cantaloupe.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "supabase.cantaloupe.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.cantaloupe.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "supabase.cantaloupe.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.cantaloupe.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "supabase.cantaloupe.name" $ }}
+          securityContext:
+            {{- toYaml .Values.cantaloupe.securityContext | nindent 12 }}
+          image: "{{ .Values.cantaloupe.image.repository }}:{{ .Values.cantaloupe.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.cantaloupe.image.pullPolicy }}
+          env:
+            {{- range $key, $value := .Values.cantaloupe.environment }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          {{- with .Values.cantaloupe.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.cantaloupe.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: 8182
+              protocol: TCP
+          {{- with .Values.cantaloupe.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.cantaloupe.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.cantaloupe.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cantaloupe.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cantaloupe.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cantaloupe.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
